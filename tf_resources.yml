@@ -1,0 +1,8 @@
+resource "aws_s3_bucket" "awsdemo" {
+  bucket = "s3-bucket-demo-devopss"
+  acl    = "private"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}

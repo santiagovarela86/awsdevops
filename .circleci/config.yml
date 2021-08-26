@@ -1,0 +1,13 @@
+version: 2.1
+
+jobs:
+  infra_creation:
+    docker:
+      - image: cimg/base:2021.07
+    steps:
+      - checkout
+
+workflows:
+  workflow:
+    jobs:
+      - infra_creation

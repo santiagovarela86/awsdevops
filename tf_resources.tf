@@ -378,7 +378,7 @@ resource "aws_lambda_function" "awsdemo-getmessages" {
 
 resource "aws_lambda_function" "awsdemo-getmessage" {
   filename         = "lambda_apigtw_to_dynamodb.zip"
-  function_name    = "awsdemo-getmessages"
+  function_name    = "awsdemo-getmessage"
   handler          = "app.getMessage"
   role             = aws_iam_role.iam-apigateway-serverless.arn
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")

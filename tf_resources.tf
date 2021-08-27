@@ -252,28 +252,28 @@ resource "aws_api_gateway_rest_api" "awsdemo-apigateway" {
   description = "AWS DEMO Api Gateway"
 }
 
-resource "aws_api_gateway_resource" "awsdemo-getMessages" {
+resource "aws_api_gateway_resource" "awsdemo-message" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway.id
   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway.root_resource_id
-  path_part   = "getMessages"
+  path_part   = "message"
 }
 
-resource "aws_api_gateway_resource" "awsdemo-getMessage" {
+resource "aws_api_gateway_resource" "awsdemo-message-date" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway.id
-  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway.root_resource_id
-  path_part   = "getMessage"
+  parent_id   = aws_api_gateway_resource.awsdemo-message.id
+  path_part   = "{date}"
 }
 
 resource "aws_api_gateway_method" "awsdemo-getMessages" {
   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway.id
-  resource_id   = aws_api_gateway_resource.awsdemo-getMessages.id
+  resource_id   = aws_api_gateway_resource.awsdemo-message.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_method" "awsdemo-getMessage" {
   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway.id
-  resource_id   = aws_api_gateway_resource.awsdemo-getMessage.id
+  resource_id   = aws_api_gateway_resource.awsdemo-message-date.id
   http_method   = "GET"
   authorization = "NONE"
 }

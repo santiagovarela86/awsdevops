@@ -248,22 +248,22 @@ resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {
   enabled          = true
 }
 
-resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
-  name        = "awsdemo-apigateway-api"
-  description = "AWS DEMO Api Gateway"
-}
+# resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
+#   name        = "awsdemo-apigateway-api"
+#   description = "AWS DEMO Api Gateway"
+# }
 
-resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessage" {
-  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
-  path_part   = "/message"
-}
+# resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessage" {
+#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
+#   path_part   = "message"
+# }
 
-resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessages" {
-  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
-  path_part   = "/message/{date}"
-}
+# resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessages" {
+#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
+#   path_part   = "message/{date}"
+# }
 
 # resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
 #   name = "awsdemo-apigateway-apikey"

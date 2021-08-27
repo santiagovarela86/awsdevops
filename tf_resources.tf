@@ -205,7 +205,10 @@ resource "aws_iam_policy" "receiveFromQueue" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action   = ["sqs:ReceiveMessage"]
+        Action   = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage"
+        ]
         Effect   = "Allow"
         Resource = "${aws_sqs_queue.awsdemo-sqs.arn}"
       },

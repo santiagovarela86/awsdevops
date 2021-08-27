@@ -98,7 +98,6 @@ resource "aws_lambda_permission" "awsdemo-allow-bucket" {
   function_name = aws_lambda_function.awsdemo-s3-to-sqs.arn
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.awsdemo-bucket.arn
-  #source_account "SourceAccount: !Ref AWS::AccountId"
 }
 
 resource "aws_s3_bucket_notification" "awsdemo-s3-to-sqs-notification" {
@@ -325,8 +324,7 @@ resource "aws_lambda_permission" "awsdemo-allow-apigateway-getmessage" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.awsdemo-getmessage.arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:*:*:*"
-  #source_account "SourceAccount: !Ref AWS::AccountId"
+  source_arn    = "${aws_api_gateway_rest_api.awsdemo-apigateway-api.execution_arn}/*/*/*"
 }
 
 resource "aws_lambda_permission" "awsdemo-allow-apigateway-getmessages" {
@@ -334,8 +332,7 @@ resource "aws_lambda_permission" "awsdemo-allow-apigateway-getmessages" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.awsdemo-getmessages.arn
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "arn:aws:execute-api:*:*:*"
-  #source_account "SourceAccount: !Ref AWS::AccountId"
+  source_arn    = "${aws_api_gateway_rest_api.awsdemo-apigateway-api.execution_arn}/*/*/*"
 }
 
 # resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {

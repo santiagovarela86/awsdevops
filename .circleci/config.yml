@@ -34,6 +34,23 @@ jobs:
       - terraform/apply:
           backend_config: "bucket=$S3_NAME, key=$S3_KEY"
 
+  infra_deletion:
+    docker:
+      - image: cimg/base:2021.07
+    steps:
+      - run:
+          name: Update PATH and Define Environment Variable at Runtime
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID' >> $BASH_ENV
+            echo 'export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY' >> $BASH_ENV
+            echo 'export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION' >> $BASH_ENV
+      - checkout
+      - attach_workspace:
+          at: .
+      - terraform/install
+      - terraform/destroy:
+          backend_config: "bucket=$S3_NAME, key=$S3_KEY"
+
 workflows:
   workflow:
     jobs:
@@ -41,3 +58,6 @@ workflows:
       - infra_creation:
           requires:
             - lambda_packaging
+      - infra_deletion:
+          requires:
+            - infra_creation

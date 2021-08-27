@@ -68,7 +68,7 @@ resource "aws_iam_policy" "produceToQueue" {
       {
         Action   = ["sqs:SendMessage"]
         Effect   = "Allow"
-        Resource = "${aws_sqs_queue.awsdemo-sqs.arn}/*"
+        Resource = "${aws_sqs_queue.awsdemo-sqs.arn}"
       },
     ]
   })

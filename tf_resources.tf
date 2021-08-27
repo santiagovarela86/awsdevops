@@ -72,7 +72,7 @@ resource "aws_iam_policy" "produceToQueue" {
       {
         Action   = ["sqs:SendMessage"]
         Effect   = "Allow"
-        Resource = "${aws_sqs_queue.awsdemo-sqs.arn}"
+        Resource = aws_sqs_queue.awsdemo-sqs.arn
       },
     ]
   })
@@ -124,7 +124,7 @@ resource "aws_sqs_queue" "awsdemo-sqs-deadletter" {
 resource "aws_sqs_queue" "awsdemo-sqs" {
   name = "awsdemo-sqs"
   redrive_policy = jsonencode({
-    deadLetterTargetArn = "${aws_sqs_queue.awsdemo-sqs-deadletter.arn}"
+    deadLetterTargetArn = aws_sqs_queue.awsdemo-sqs-deadletter.arn
     maxReceiveCount     = 5
   })
 
@@ -202,7 +202,7 @@ resource "aws_iam_policy" "dynamodb" {
               "dynamodb:ConditionCheckItem"
             ]
         Effect   = "Allow"
-        Resource = "${aws_dynamodb_table.awsdemo-dynamodb-table.arn}"
+        Resource = aws_dynamodb_table.awsdemo-dynamodb-table.arn
       },
     ]
   })

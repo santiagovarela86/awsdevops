@@ -304,3 +304,31 @@ resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
 }
+
+resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}

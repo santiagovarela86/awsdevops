@@ -7,8 +7,8 @@ resource "aws_s3_bucket" "awsdemo-bucket" {
   }
 }
 
-resource "aws_iam_role" "iam_for_lambda" {
-  name = "iam_for_lambda"
+resource "aws_iam_role" "iam_s3_to_sqs" {
+  name = "iam_s3_to_sqs"
 
   assume_role_policy = <<EOF
 {
@@ -78,7 +78,7 @@ resource "aws_lambda_function" "awsdemo-s3-to-sqs" {
   filename         = "lambda_s3_to_sqs.zip"
   function_name    = "awsdemo-s3-to-sqs"
   handler          = "app.lambda_handler"
-  role             = aws_iam_role.iam_for_lambda.arn
+  role             = aws_iam_role.iam_s3_to_sqs.arn
   source_code_hash = filebase64sha256("lambda_s3_to_sqs.zip")
   runtime          = "python3.7"
 
@@ -148,35 +148,65 @@ resource "aws_dynamodb_table" "awsdemo-dynamodb-table" {
   }
 }
 
+resource "aws_iam_role" "iam_sqs_to_dynamodb" {
+  name = "iam_sqs_to_dynamodb"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+
+  managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+}
+
+resource "aws_iam_policy" "dynamodb" {
+  name = "dynamodb"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = [
+              "dynamodb:GetItem",
+              "dynamodb:DeleteItem",
+              "dynamodb:PutItem",
+              "dynamodb:Scan",
+              "dynamodb:Query",
+              "dynamodb:UpdateItem",
+              "dynamodb:BatchWriteItem",
+              "dynamodb:BatchGetItem",
+              "dynamodb:DescribeTable",
+              "dynamodb:ConditionCheckItem"
+            ]
+        Effect   = "Allow"
+        Resource = "${aws_dynamodb_table.awsdemo-dynamodb-table.arn}"
+      },
+    ]
+  })
+}
+
 resource "aws_lambda_function" "awsdemo-sqs-to-dynamodb" {
   filename         = "lambda_sqs_to_dynamodb.zip"
   function_name    = "awsdemo-sqs-to-dynamodb"
   handler          = "app.lambda_handler"
+  role             = aws_iam_role.iam_sqs_to_dynamodb.arn
   source_code_hash = filebase64sha256("lambda_sqs_to_dynamodb.zip")
   runtime          = "python3.7"
 
   tags = {
     Environment = "AWS-Demo"
   }
-
-  policies = [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:GetItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:PutItem",
-        "dynamodb:Scan",
-        "dynamodb:Query",
-        "dynamodb:UpdateItem",
-        "dynamodb:BatchWriteItem",
-        "dynamodb:BatchGetItem",
-        "dynamodb:DescribeTable",
-        "dynamodb:ConditionCheckItem"
-      ],
-      Resource = "${aws_dynamodb_table.awsdemo-dynamodb-table.arn}"
-    }
-  ]
 }
 
 resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {

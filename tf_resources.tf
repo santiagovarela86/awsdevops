@@ -221,7 +221,7 @@ resource "aws_iam_policy" "receiveFromQueue" {
           "sqs:GetQueueAttributes"
         ]
         Effect   = "Allow"
-        Resource = "aws_sqs_queue.awsdemo-sqs.arn"
+        Resource = aws_sqs_queue.awsdemo-sqs.arn
       },
     ]
   })

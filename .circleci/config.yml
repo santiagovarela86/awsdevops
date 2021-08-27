@@ -21,15 +21,15 @@ jobs:
     docker:
       - image: cimg/base:2021.07
     steps:
+      - attach_workspace:
+          at: .
+      - checkout
       - run:
           name: Update PATH and Define Environment Variable at Runtime
           command: |
             echo 'export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID' >> $BASH_ENV
             echo 'export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY' >> $BASH_ENV
             echo 'export AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION' >> $BASH_ENV
-      - checkout
-      - attach_workspace:
-          at: .
       - run:
           name: Listing files
           command: ls -l

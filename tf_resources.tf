@@ -207,7 +207,8 @@ resource "aws_iam_policy" "receiveFromQueue" {
       {
         Action   = [
           "sqs:ReceiveMessage",
-          "sqs:DeleteMessage"
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
         ]
         Effect   = "Allow"
         Resource = "${aws_sqs_queue.awsdemo-sqs.arn}"

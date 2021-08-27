@@ -249,7 +249,8 @@ resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {
 }
 
 resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
-  name = "awsdemo-apigateway-api"
+  name        = "awsdemo-apigateway-api"
+  description = "AWS DEMO Api Gateway"
 }
 
 resource "aws_api_gateway_resource" "awsdemo-apigateway-resource" {
@@ -335,8 +336,8 @@ resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
 #   authorization = "NONE"
 # }
 
-resource "aws_iam_role" "iam-get-messages" {
-  name = "iam-get-messages"
+resource "aws_iam_role" "iam-apigateway-serverless" {
+  name = "iam-apigateway-serverless"
 
   assume_role_policy = <<EOF
 {
@@ -365,10 +366,24 @@ resource "aws_lambda_function" "awsdemo-getmessages" {
   filename         = "lambda_apigtw_to_dynamodb.zip"
   function_name    = "awsdemo-getmessages"
   handler          = "app.getMessages"
-  role             = aws_iam_role.iam-get-messages.arn
+  role             = aws_iam_role.iam-apigateway-serverless.arn
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
   runtime          = "nodejs10.x"
   description      = "Get all messages in DynamoDB table (scan)"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
+resource "aws_lambda_function" "awsdemo-getmessage" {
+  filename         = "lambda_apigtw_to_dynamodb.zip"
+  function_name    = "awsdemo-getmessages"
+  handler          = "app.getMessage"
+  role             = aws_iam_role.iam-apigateway-serverless.arn
+  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+  runtime          = "nodejs10.x"
+  description      = "Get single message based on timestamp and location"
 
   tags = {
     Environment = "AWS-Demo"
@@ -383,4 +398,14 @@ resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
   integration_http_method = "GET"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "awsdemo-integration-getmessage" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id = aws_api_gateway_method.awsdemo-apigateway-get.resource_id
+  http_method = aws_api_gateway_method.awsdemo-apigateway-get.http_method
+
+  integration_http_method = "GET"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.awsdemo-getmessage.invoke_arn
 }

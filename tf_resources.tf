@@ -127,6 +127,27 @@ resource "aws_sqs_queue" "awsdemo-sqs" {
   }
 }
 
+resource "aws_dynamodb_table" "awsdemo-dynamodb-table" {
+  name           = "awsdemo-dynamodb-table"
+  billing_mode   = "PROVISIONED"
+  hash_key       = "date"
+  range_key      = "time"
+
+  attribute {
+    name = "date"
+    type = "S"
+  }
+
+  attribute {
+    name = "time"
+    type = "S"
+  }
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
 resource "aws_lambda_function" "awsdemo-sqs-to-dynamodb" {
   filename         = "lambda_sqs_to_dynamodb.zip"
   function_name    = "awsdemo-sqs-to-dynamodb"
@@ -137,4 +158,30 @@ resource "aws_lambda_function" "awsdemo-sqs-to-dynamodb" {
   tags = {
     Environment = "AWS-Demo"
   }
+
+  policies = [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:PutItem",
+        "dynamodb:Scan",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:BatchGetItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:ConditionCheckItem"
+      ],
+      Resource = "${aws_dynamodb_table.awsdemo-dynamodb-table.arn}"
+    }
+  ]
+}
+
+resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {
+  event_source_arn = aws_sqs_queue.awsdemo-sqs.arn
+  function_name    = aws_lambda_function.awsdemo-sqs-to-dynamodb.arn
+  batch_size       = 10
+  enabled          = true
 }

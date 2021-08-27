@@ -253,159 +253,165 @@ resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
   description = "AWS DEMO Api Gateway"
 }
 
-resource "aws_api_gateway_resource" "awsdemo-apigateway-resource" {
+resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessage" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
-  path_part   = "awsdemo-apigateway-resource"
+  path_part   = "/message"
 }
 
-resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
-  name = "awsdemo-apigateway-apikey"
-}
-
-resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
+resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessages" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-
-  depends_on = [aws_api_gateway_integration.awsdemo-integration-getmessages]
+  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
+  path_part   = "/message/{date}"
 }
 
-resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {
-  deployment_id = aws_api_gateway_deployment.awsdemo-apigateway-deployment.id
-  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  stage_name    = "Prod"
+# resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
+#   name = "awsdemo-apigateway-apikey"
+# }
 
-  tags = {
-    Environment = "AWS-Demo"
-  }
-}
+# resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
+#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
 
-resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
-  name         = "awsdemo-apigateway-usageplan"
+#   depends_on = [aws_api_gateway_integration.awsdemo-integration-getmessage, aws_api_gateway_integration.awsdemo-integration-getmessages]
+# }
 
-  api_stages {
-    api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-    stage  = aws_api_gateway_stage.awsdemo-apigateway-stage.stage_name
-  }
+# resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {
+#   deployment_id = aws_api_gateway_deployment.awsdemo-apigateway-deployment.id
+#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   stage_name    = "Prod"
 
-  quota_settings {
-    limit  = 5000
-    period = "MONTH"
-  }
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
+# }
 
-  throttle_settings {
-    burst_limit = 200
-    rate_limit  = 100
-  }
+# resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
+#   name         = "awsdemo-apigateway-usageplan"
 
-  tags = {
-    Environment = "AWS-Demo"
-  }
-}
+#   api_stages {
+#     api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#     stage  = aws_api_gateway_stage.awsdemo-apigateway-stage.stage_name
+#   }
 
-resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
-  key_id        = aws_api_gateway_api_key.awsdemo-apigateway-apikey.id
-  key_type      = "API_KEY"
-  usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
-}
+#   quota_settings {
+#     limit  = 5000
+#     period = "MONTH"
+#   }
 
-resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
-  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-  http_method   = "ANY"
-  authorization = "NONE"
-}
+#   throttle_settings {
+#     burst_limit = 200
+#     rate_limit  = 100
+#   }
 
-# resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
+# }
+
+# resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
+#   key_id        = aws_api_gateway_api_key.awsdemo-apigateway-apikey.id
+#   key_type      = "API_KEY"
+#   usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
+# }
+
+# resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
 #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
 #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-#   http_method   = "POST"
+#   http_method   = "GET"
 #   authorization = "NONE"
 # }
 
-# resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
-#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-#   http_method   = "PUT"
-#   authorization = "NONE"
+# # resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
+# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+# #   http_method   = "POST"
+# #   authorization = "NONE"
+# # }
+
+# # resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
+# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+# #   http_method   = "PUT"
+# #   authorization = "NONE"
+# # }
+
+# # resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
+# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+# #   http_method   = "DELETE"
+# #   authorization = "NONE"
+# # }
+
+# resource "aws_iam_role" "iam-apigateway-serverless" {
+#   name = "iam-apigateway-serverless"
+
+#   assume_role_policy = <<EOF
+# {
+#   "Version": "2012-10-17",
+#   "Statement": [
+#     {
+#       "Action": "sts:AssumeRole",
+#       "Principal": {
+#         "Service": "lambda.amazonaws.com"
+#       },
+#       "Effect": "Allow",
+#       "Sid": ""
+#     }
+#   ]
+# }
+# EOF
+
+#   managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
 # }
 
-# resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
-#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-#   http_method   = "DELETE"
-#   authorization = "NONE"
+# resource "aws_lambda_function" "awsdemo-getmessages" {
+#   filename         = "lambda_apigtw_to_dynamodb.zip"
+#   function_name    = "awsdemo-getmessages"
+#   handler          = "app.getMessages"
+#   role             = aws_iam_role.iam-apigateway-serverless.arn
+#   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+#   runtime          = "nodejs10.x"
+#   description      = "Get all messages in DynamoDB table (scan)"
+
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
 # }
 
-resource "aws_iam_role" "iam-apigateway-serverless" {
-  name = "iam-apigateway-serverless"
+# resource "aws_lambda_function" "awsdemo-getmessage" {
+#   filename         = "lambda_apigtw_to_dynamodb.zip"
+#   function_name    = "awsdemo-getmessage"
+#   handler          = "app.getMessage"
+#   role             = aws_iam_role.iam-apigateway-serverless.arn
+#   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+#   runtime          = "nodejs10.x"
+#   description      = "Get single message based on timestamp and location"
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
+# }
 
-  managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+# resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
+#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   resource_id = aws_api_gateway_method.awsdemo-apigateway-get.resource_id
+#   http_method = aws_api_gateway_method.awsdemo-apigateway-get.http_method
 
-  tags = {
-    Environment = "AWS-Demo"
-  }
-}
+#   integration_http_method = "GET"
+#   type                    = "AWS_PROXY"
+#   uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
+# }
 
-resource "aws_lambda_function" "awsdemo-getmessages" {
-  filename         = "lambda_apigtw_to_dynamodb.zip"
-  function_name    = "awsdemo-getmessages"
-  handler          = "app.getMessages"
-  role             = aws_iam_role.iam-apigateway-serverless.arn
-  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-  runtime          = "nodejs10.x"
-  description      = "Get all messages in DynamoDB table (scan)"
+# resource "aws_api_gateway_integration" "awsdemo-integration-getmessage" {
+#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   resource_id = aws_api_gateway_method.awsdemo-apigateway-get.resource_id
+#   http_method = aws_api_gateway_method.awsdemo-apigateway-get.http_method
 
-  tags = {
-    Environment = "AWS-Demo"
-  }
-}
-
-resource "aws_lambda_function" "awsdemo-getmessage" {
-  filename         = "lambda_apigtw_to_dynamodb.zip"
-  function_name    = "awsdemo-getmessage"
-  handler          = "app.getMessage"
-  role             = aws_iam_role.iam-apigateway-serverless.arn
-  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-  runtime          = "nodejs10.x"
-  description      = "Get single message based on timestamp and location"
-
-  tags = {
-    Environment = "AWS-Demo"
-  }
-}
-
-resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
-  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id = aws_api_gateway_method.awsdemo-apigateway-get.resource_id
-  http_method = aws_api_gateway_method.awsdemo-apigateway-get.http_method
-
-  integration_http_method = "GET"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
-}
-
-resource "aws_api_gateway_integration" "awsdemo-integration-getmessage" {
-  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id = aws_api_gateway_method.awsdemo-apigateway-get.resource_id
-  http_method = aws_api_gateway_method.awsdemo-apigateway-get.http_method
-
-  integration_http_method = "GET"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.awsdemo-getmessage.invoke_arn
-}
+#   integration_http_method = "GET"
+#   type                    = "AWS_PROXY"
+#   uri                     = aws_lambda_function.awsdemo-getmessage.invoke_arn
+# }

@@ -308,27 +308,77 @@ resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
 resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-  http_method   = "GET"
+  http_method   = "ANY"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
-  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-  http_method   = "POST"
-  authorization = "NONE"
+# resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
+#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+#   http_method   = "POST"
+#   authorization = "NONE"
+# }
+
+# resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
+#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+#   http_method   = "PUT"
+#   authorization = "NONE"
+# }
+
+# resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
+#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+#   http_method   = "DELETE"
+#   authorization = "NONE"
+# }
+
+resource "aws_iam_role" "iam-get-messages" {
+  name = "iam-get-messages"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+
+  managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
 }
 
-resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
-  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-  http_method   = "PUT"
-  authorization = "NONE"
+resource "aws_lambda_function" "awsdemo-getmessages" {
+  filename         = "lambda_apigtw_to_dynamodb.zip"
+  function_name    = "awsdemo-getmessages"
+  handler          = "app.getMessages"
+  role             = aws_iam_role.iam-get-messages.arn
+  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+  runtime          = "nodejs10.x"
+  description      = "Get all messages in DynamoDB table (scan)"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
 }
 
-resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
-  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-  http_method   = "DELETE"
-  authorization = "NONE"
+resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id = aws_api_gateway_method.awsdemo-apigateway-get.resource_id
+  http_method = aws_api_gateway_method.awsdemo-apigateway-get.http_method
+
+  integration_http_method = "GET"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
 }

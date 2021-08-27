@@ -4,6 +4,19 @@ orbs:
   terraform: circleci/terraform@2.1.0
 
 jobs:
+  lambda_packaging:
+    docker:
+      - image: cimg/base:2021.07
+    steps:
+      - checkout
+      - run:
+          name: Package S3 to SQS Lambda
+          command: zip -r lambda_s3_to_sqs.zip lambda_s3_to_sqs
+      - persist_to_workspace:
+          root: .
+          paths:
+            - lambda_s3_to_sqs.zip
+
   infra_creation:
     docker:
       - image: cimg/base:2021.07

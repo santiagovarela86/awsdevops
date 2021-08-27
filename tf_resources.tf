@@ -130,6 +130,8 @@ resource "aws_sqs_queue" "awsdemo-sqs" {
 resource "aws_dynamodb_table" "awsdemo-dynamodb-table" {
   name           = "awsdemo-dynamodb-table"
   billing_mode   = "PROVISIONED"
+  read_capacity  = 25
+  write_capacity = 25
   hash_key       = "date"
   range_key      = "time"
 

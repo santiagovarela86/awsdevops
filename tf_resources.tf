@@ -350,7 +350,7 @@ resource "aws_lambda_permission" "awsdemo-getMessages" {
 
 resource "aws_api_gateway_integration" "awsdemo-getMessages" {
   rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway.id
-  resource_id             = aws_api_gateway_method.awsdemo-getMessages.id
+  resource_id             = aws_api_gateway_method.awsdemo-getMessages.resource_id
   http_method             = aws_api_gateway_method.awsdemo-getMessages.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"

@@ -27,6 +27,10 @@ resource "aws_iam_role" "iam_s3_to_sqs" {
 EOF
 
   managed_policy_arns = [aws_iam_policy.logging.arn, aws_iam_policy.getObjects.arn, aws_iam_policy.produceToQueue.arn]
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
 }
 
 resource "aws_iam_policy" "logging" {
@@ -81,6 +85,7 @@ resource "aws_lambda_function" "awsdemo-s3-to-sqs" {
   role             = aws_iam_role.iam_s3_to_sqs.arn
   source_code_hash = filebase64sha256("lambda_s3_to_sqs.zip")
   runtime          = "python3.7"
+  description      = "Responds to S3 Event - Sends to SQS"
 
   tags = {
     Environment = "AWS-Demo"
@@ -93,6 +98,7 @@ resource "aws_lambda_permission" "awsdemo-allow-bucket" {
   function_name = aws_lambda_function.awsdemo-s3-to-sqs.arn
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.awsdemo-bucket.arn
+  #source_account "SourceAccount: !Ref AWS::AccountId"
 }
 
 resource "aws_s3_bucket_notification" "awsdemo-s3-to-sqs-notification" {
@@ -170,6 +176,10 @@ resource "aws_iam_role" "iam_sqs_to_dynamodb" {
 EOF
 
   managed_policy_arns = [aws_iam_policy.dynamodb.arn, aws_iam_policy.receiveFromQueue.arn]
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
 }
 
 resource "aws_iam_policy" "dynamodb" {
@@ -224,6 +234,7 @@ resource "aws_lambda_function" "awsdemo-sqs-to-dynamodb" {
   role             = aws_iam_role.iam_sqs_to_dynamodb.arn
   source_code_hash = filebase64sha256("lambda_sqs_to_dynamodb.zip")
   runtime          = "python3.7"
+  description      = "Responds to SQS Event - Sends to Dynamodb"
 
   tags = {
     Environment = "AWS-Demo"
@@ -235,4 +246,61 @@ resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {
   function_name    = aws_lambda_function.awsdemo-sqs-to-dynamodb.arn
   batch_size       = 10
   enabled          = true
+}
+
+resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
+  name = "awsdemo-apigateway-api"
+}
+
+resource "aws_api_gateway_resource" "awsdemo-apigateway-resource" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
+  path_part   = "awsdemo-apigateway-resource"
+}
+
+resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
+  name = "awsdemo-apigateway-apikey"
+}
+
+resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+}
+
+resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {
+  deployment_id = aws_api_gateway_deployment.awsdemo-apigateway-deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  stage_name    = "Prod"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
+resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
+  name         = "awsdemo-apigateway-usageplan"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+    stage  = aws_api_gateway_stage.awsdemo-apigateway-stage.stage_name
+  }
+
+  quota_settings {
+    limit  = 5000
+    period = "MONTH"
+  }
+
+  throttle_settings {
+    burst_limit = 200
+    rate_limit  = 100
+  }
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
+resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
+  key_id        = aws_api_gateway_api_key.awsdemo-apigateway-apikey.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
 }

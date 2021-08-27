@@ -253,94 +253,18 @@ resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
   description = "AWS DEMO Api Gateway"
 }
 
-resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessage" {
+resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-message" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
   path_part   = "message"
 }
 
-resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessages" {
-  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
-  path_part   = "message/{date}"
+resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource-message.id
+  http_method   = "GET"
+  authorization = "NONE"
 }
-
-# resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
-#   name = "awsdemo-apigateway-apikey"
-# }
-
-# resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
-#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-
-#   depends_on = [aws_api_gateway_integration.awsdemo-integration-getmessage, aws_api_gateway_integration.awsdemo-integration-getmessages]
-# }
-
-# resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {
-#   deployment_id = aws_api_gateway_deployment.awsdemo-apigateway-deployment.id
-#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   stage_name    = "Prod"
-
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
-# }
-
-# resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
-#   name         = "awsdemo-apigateway-usageplan"
-
-#   api_stages {
-#     api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#     stage  = aws_api_gateway_stage.awsdemo-apigateway-stage.stage_name
-#   }
-
-#   quota_settings {
-#     limit  = 5000
-#     period = "MONTH"
-#   }
-
-#   throttle_settings {
-#     burst_limit = 200
-#     rate_limit  = 100
-#   }
-
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
-# }
-
-# resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
-#   key_id        = aws_api_gateway_api_key.awsdemo-apigateway-apikey.id
-#   key_type      = "API_KEY"
-#   usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
-# }
-
-# resource "aws_api_gateway_method" "awsdemo-apigateway-get" {
-#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-#   http_method   = "GET"
-#   authorization = "NONE"
-# }
-
-# # resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
-# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-# #   http_method   = "POST"
-# #   authorization = "NONE"
-# # }
-
-# # resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
-# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-# #   http_method   = "PUT"
-# #   authorization = "NONE"
-# # }
-
-# # resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
-# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-# #   http_method   = "DELETE"
-# #   authorization = "NONE"
-# # }
 
 resource "aws_iam_role" "iam-apigateway-serverless" {
   name = "iam-apigateway-serverless"
@@ -394,6 +318,103 @@ resource "aws_lambda_function" "awsdemo-getmessage" {
   tags = {
     Environment = "AWS-Demo"
   }
+}
+
+resource "aws_lambda_permission" "awsdemo-allow-apigateway-getmessage" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.awsdemo-getmessage.arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:*:*:*"
+  #source_account "SourceAccount: !Ref AWS::AccountId"
+}
+
+resource "aws_lambda_permission" "awsdemo-allow-apigateway-getmessages" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.awsdemo-getmessages.arn
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:*:*:*"
+  #source_account "SourceAccount: !Ref AWS::AccountId"
+}
+
+# resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
+#   name = "awsdemo-apigateway-apikey"
+# }
+
+# resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
+#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+
+#   depends_on = [aws_api_gateway_integration.awsdemo-integration-getmessage, aws_api_gateway_integration.awsdemo-integration-getmessages]
+# }
+
+# resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {
+#   deployment_id = aws_api_gateway_deployment.awsdemo-apigateway-deployment.id
+#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   stage_name    = "Prod"
+
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
+# }
+
+# resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
+#   name         = "awsdemo-apigateway-usageplan"
+
+#   api_stages {
+#     api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#     stage  = aws_api_gateway_stage.awsdemo-apigateway-stage.stage_name
+#   }
+
+#   quota_settings {
+#     limit  = 5000
+#     period = "MONTH"
+#   }
+
+#   throttle_settings {
+#     burst_limit = 200
+#     rate_limit  = 100
+#   }
+
+#   tags = {
+#     Environment = "AWS-Demo"
+#   }
+# }
+
+# resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
+#   key_id        = aws_api_gateway_api_key.awsdemo-apigateway-apikey.id
+#   key_type      = "API_KEY"
+#   usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
+# }
+
+# # resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
+# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+# #   http_method   = "POST"
+# #   authorization = "NONE"
+# # }
+
+# # resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
+# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+# #   http_method   = "PUT"
+# #   authorization = "NONE"
+# # }
+
+# # resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
+# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
+# #   http_method   = "DELETE"
+# #   authorization = "NONE"
+# # }
+
+resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
+  rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  resource_id             = aws_api_gateway_resource.awsdemo-apigateway-resource-message.id
+  http_method             = aws_api_gateway_method.awsdemo-apigateway-get.http_method
+  integration_http_method = "GET"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
 }
 
 # resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {

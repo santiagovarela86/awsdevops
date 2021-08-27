@@ -169,7 +169,7 @@ resource "aws_iam_role" "iam_sqs_to_dynamodb" {
 }
 EOF
 
-  managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+  managed_policy_arns = [aws_iam_policy.dynamodb.arn, aws_iam_policy.receiveFromQueue]
 }
 
 resource "aws_iam_policy" "dynamodb" {
@@ -193,6 +193,21 @@ resource "aws_iam_policy" "dynamodb" {
             ]
         Effect   = "Allow"
         Resource = "${aws_dynamodb_table.awsdemo-dynamodb-table.arn}"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "receiveFromQueue" {
+  name = "receiveFromQueue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["sqs:ReceiveMessage"]
+        Effect   = "Allow"
+        Resource = "${aws_sqs_queue.awsdemo-sqs.arn}"
       },
     ]
   })

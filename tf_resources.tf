@@ -1,4 +1,4 @@
-resource "aws_s3_bucket" "awsdemo" {
+resource "aws_s3_bucket" "awsdemo-bucket" {
   bucket = "s3-bucket-demo-devops"
   acl    = "private"
 
@@ -38,4 +38,24 @@ resource "aws_lambda_function" "awsdemo-s3-to-sqs" {
   tags = {
     Environment = "AWS-Demo"
   }
+}
+
+resource "aws_lambda_permission" "awsdemo-allow-bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.awsdemo-s3-to-sqs.arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.awsdemo-bucket.arn
+}
+
+resource "aws_s3_bucket_notification" "awsdemo-s3-to-sqs-notification" {
+  bucket = aws_s3_bucket.awsdemo-bucket.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.awsdemo-s3-to-sqs.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_suffix       = ".csv"
+  }
+
+  depends_on = [aws_lambda_permission.awsdemo-allow-bucket]
 }

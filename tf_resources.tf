@@ -248,22 +248,22 @@ resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {
   enabled          = true
 }
 
-# resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
-#   name        = "awsdemo-apigateway-api"
-#   description = "AWS DEMO Api Gateway"
-# }
+resource "aws_api_gateway_rest_api" "awsdemo-apigateway-api" {
+  name        = "awsdemo-apigateway-api"
+  description = "AWS DEMO Api Gateway"
+}
 
-# resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessage" {
-#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
-#   path_part   = "message"
-# }
+resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessage" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
+  path_part   = "message"
+}
 
-# resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessages" {
-#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
-#   path_part   = "message/{date}"
-# }
+resource "aws_api_gateway_resource" "awsdemo-apigateway-resource-getmessages" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+  parent_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.root_resource_id
+  path_part   = "message/{date}"
+}
 
 # resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
 #   name = "awsdemo-apigateway-apikey"
@@ -342,59 +342,59 @@ resource "aws_lambda_event_source_mapping" "awsdemo-sqs-to-dynamodb-event" {
 # #   authorization = "NONE"
 # # }
 
-# resource "aws_iam_role" "iam-apigateway-serverless" {
-#   name = "iam-apigateway-serverless"
+resource "aws_iam_role" "iam-apigateway-serverless" {
+  name = "iam-apigateway-serverless"
 
-#   assume_role_policy = <<EOF
-# {
-#   "Version": "2012-10-17",
-#   "Statement": [
-#     {
-#       "Action": "sts:AssumeRole",
-#       "Principal": {
-#         "Service": "lambda.amazonaws.com"
-#       },
-#       "Effect": "Allow",
-#       "Sid": ""
-#     }
-#   ]
-# }
-# EOF
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 
-#   managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+  managed_policy_arns = [aws_iam_policy.dynamodb.arn]
 
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
-# }
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
 
-# resource "aws_lambda_function" "awsdemo-getmessages" {
-#   filename         = "lambda_apigtw_to_dynamodb.zip"
-#   function_name    = "awsdemo-getmessages"
-#   handler          = "app.getMessages"
-#   role             = aws_iam_role.iam-apigateway-serverless.arn
-#   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-#   runtime          = "nodejs10.x"
-#   description      = "Get all messages in DynamoDB table (scan)"
+resource "aws_lambda_function" "awsdemo-getmessages" {
+  filename         = "lambda_apigtw_to_dynamodb.zip"
+  function_name    = "awsdemo-getmessages"
+  handler          = "app.getMessages"
+  role             = aws_iam_role.iam-apigateway-serverless.arn
+  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+  runtime          = "nodejs10.x"
+  description      = "Get all messages in DynamoDB table (scan)"
 
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
-# }
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
 
-# resource "aws_lambda_function" "awsdemo-getmessage" {
-#   filename         = "lambda_apigtw_to_dynamodb.zip"
-#   function_name    = "awsdemo-getmessage"
-#   handler          = "app.getMessage"
-#   role             = aws_iam_role.iam-apigateway-serverless.arn
-#   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-#   runtime          = "nodejs10.x"
-#   description      = "Get single message based on timestamp and location"
+resource "aws_lambda_function" "awsdemo-getmessage" {
+  filename         = "lambda_apigtw_to_dynamodb.zip"
+  function_name    = "awsdemo-getmessage"
+  handler          = "app.getMessage"
+  role             = aws_iam_role.iam-apigateway-serverless.arn
+  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+  runtime          = "nodejs10.x"
+  description      = "Get single message based on timestamp and location"
 
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
-# }
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
 
 # resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
 #   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id

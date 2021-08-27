@@ -405,14 +405,14 @@ resource "aws_lambda_permission" "awsdemo-allow-apigateway-getmessages" {
 # #   authorization = "NONE"
 # # }
 
-resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
-  rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-  resource_id             = aws_api_gateway_resource.awsdemo-apigateway-resource-message.id
-  http_method             = aws_api_gateway_method.awsdemo-apigateway-get.http_method
-  integration_http_method = "GET"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
-}
+# resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
+#   rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+#   resource_id             = aws_api_gateway_resource.awsdemo-apigateway-resource-message.id
+#   http_method             = aws_api_gateway_method.awsdemo-apigateway-get.http_method
+#   integration_http_method = "GET"
+#   type                    = "AWS_PROXY"
+#   uri                     = aws_lambda_function.awsdemo-getmessages.invoke_arn
+# }
 
 # resource "aws_api_gateway_integration" "awsdemo-integration-getmessages" {
 #   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id

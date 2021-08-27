@@ -25,6 +25,53 @@ resource "aws_iam_role" "iam_for_lambda" {
   ]
 }
 EOF
+
+  managed_policy_arns = [aws_iam_policy.logging.arn, aws_iam_policy.getObjects.arn, aws_iam_policy.produceToQueue.arn]
+}
+
+resource "aws_iam_policy" "logging" {
+  name = "allowLogging"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["logs:*"]
+        Effect   = "Allow"
+        Resource = "arn:aws:logs:*:*:*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "getObjects" {
+  name = "getObjects"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["s3:GetObject"]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.awsdemo-bucket.arn}/*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "produceToQueue" {
+  name = "produceToQueue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["sqs:SendMessage"]
+        Effect   = "Allow"
+        Resource = "${aws_sqs_queue.awsdemo-sqs.arn}/*"
+      },
+    ]
+  })
 }
 
 resource "aws_lambda_function" "awsdemo-s3-to-sqs" {
@@ -58,4 +105,24 @@ resource "aws_s3_bucket_notification" "awsdemo-s3-to-sqs-notification" {
   }
 
   depends_on = [aws_lambda_permission.awsdemo-allow-bucket]
+}
+
+resource "aws_sqs_queue" "awsdemo-sqs" {
+  name = "awsdemo-sqs"
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = "${aws_sqs_queue.awsdemo-sqs-deadletter.arn}"
+    maxReceiveCount     = 5
+  })
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
+resource "aws_sqs_queue" "awsdemo-sqs-deadletter" {
+  name = "awsdemo-sqs-deadletter"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
 }

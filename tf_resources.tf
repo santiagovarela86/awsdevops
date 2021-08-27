@@ -264,6 +264,8 @@ resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
 
 resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
+
+  depends_on = [aws_api_gateway_integration.awsdemo-integration-getmessages]
 }
 
 resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {

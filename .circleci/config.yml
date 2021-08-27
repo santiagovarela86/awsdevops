@@ -12,10 +12,14 @@ jobs:
       - run:
           name: Package S3 to SQS Lambda
           command: zip -r lambda_s3_to_sqs.zip lambda_s3_to_sqs
+      - run:
+          name: Package SQS to DynamoDB Lambda
+          command: zip -r lambda_sqs_to_dynamodb.zip lambda_sqs_to_dynamodb
       - persist_to_workspace:
           root: .
           paths:
             - lambda_s3_to_sqs.zip
+            - lambda_sqs_to_dynamodb.zip
 
   infra_creation:
     docker:
@@ -58,6 +62,6 @@ workflows:
       - infra_creation:
           requires:
             - lambda_packaging
-      - infra_deletion:
-          requires:
-            - infra_creation
+#      - infra_deletion:
+#          requires:
+#            - infra_creation

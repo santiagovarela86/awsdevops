@@ -107,6 +107,14 @@ resource "aws_s3_bucket_notification" "awsdemo-s3-to-sqs-notification" {
   depends_on = [aws_lambda_permission.awsdemo-allow-bucket]
 }
 
+resource "aws_sqs_queue" "awsdemo-sqs-deadletter" {
+  name = "awsdemo-sqs-deadletter"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
 resource "aws_sqs_queue" "awsdemo-sqs" {
   name = "awsdemo-sqs"
   redrive_policy = jsonencode({
@@ -119,8 +127,12 @@ resource "aws_sqs_queue" "awsdemo-sqs" {
   }
 }
 
-resource "aws_sqs_queue" "awsdemo-sqs-deadletter" {
-  name = "awsdemo-sqs-deadletter"
+resource "aws_lambda_function" "awsdemo-sqs-to-dynamodb" {
+  filename         = "lambda_sqs_to_dynamodb.zip"
+  function_name    = "awsdemo-sqs-to-dynamodb"
+  handler          = "app.lambda_handler"
+  source_code_hash = filebase64sha256("lambda_sqs_to_dynamodb.zip")
+  runtime          = "python3.7"
 
   tags = {
     Environment = "AWS-Demo"

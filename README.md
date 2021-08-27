@@ -6,7 +6,7 @@ The idea is to deploy both the infrastructure and the code of a test application
 
 The application's architecture is event-driven and serverless.
 
-Based off the following blog post -> https://programmaticponderings.com/2019/10/04/event-driven-serverless-architectures-with-aws-lambda-sqs-dynamodb-and-api-gateway/
+Based on the following blog post -> https://programmaticponderings.com/2019/10/04/event-driven-serverless-architectures-with-aws-lambda-sqs-dynamodb-and-api-gateway/
 
 Link to the original repo -> https://github.com/garystafford/serverless-sqs-dynamo-demo
 

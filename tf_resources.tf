@@ -548,36 +548,3 @@ resource "aws_api_gateway_stage" "awsdemo-stage" {
     Environment = "AWS-Demo"
   }
 }
-
-# resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
-#   name = "awsdemo-apigateway-apikey"
-# }
-
-# resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
-#   name         = "awsdemo-apigateway-usageplan"
-
-#   api_stages {
-#     api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#     stage  = aws_api_gateway_stage.awsdemo-apigateway-stage.stage_name
-#   }
-
-#   quota_settings {
-#     limit  = 5000
-#     period = "MONTH"
-#   }
-
-#   throttle_settings {
-#     burst_limit = 200
-#     rate_limit  = 100
-#   }
-
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
-# }
-
-# resource "aws_api_gateway_usage_plan_key" "awsdemo-apigateway-usageplankey" {
-#   key_id        = aws_api_gateway_api_key.awsdemo-apigateway-apikey.id
-#   key_type      = "API_KEY"
-#   usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
-# }

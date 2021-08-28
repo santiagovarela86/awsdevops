@@ -66,6 +66,6 @@ workflows:
       - infra_creation:
           requires:
             - lambda_packaging
-#      - infra_deletion:
-#          requires:
-#            - infra_creation
+      - infra_deletion:
+          requires:
+            - infra_creation

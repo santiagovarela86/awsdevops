@@ -91,6 +91,13 @@ resource "aws_lambda_function" "awsdemo-s3-to-sqs" {
   runtime          = "python3.7"
   description      = "Responds to S3 Event - Sends to SQS"
 
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
+
   tags = {
     Environment = "AWS-Demo"
   }
@@ -246,6 +253,13 @@ resource "aws_lambda_function" "awsdemo-sqs-to-dynamodb" {
   source_code_hash = filebase64sha256("lambda_sqs_to_dynamodb.zip")
   runtime          = "python3.7"
   description      = "Responds to SQS Event - Sends to Dynamodb"
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
 
   tags = {
     Environment = "AWS-Demo"

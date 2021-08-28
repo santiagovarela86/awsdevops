@@ -285,6 +285,20 @@ resource "aws_api_gateway_method" "awsdemo-getMessage" {
   authorization = "NONE"
 }
 
+resource "aws_api_gateway_method" "awsdemo-putMessage" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway.id
+  resource_id   = aws_api_gateway_resource.awsdemo-message-date.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "awsdemo-deleteMessage" {
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway.id
+  resource_id   = aws_api_gateway_resource.awsdemo-message-date.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}
+
 resource "aws_iam_role" "iam-apigateway-serverless" {
   name = "iam-apigateway-serverless"
 
@@ -317,7 +331,7 @@ resource "aws_lambda_function" "awsdemo-getMessages" {
   handler          = "app.getMessages"
   role             = aws_iam_role.iam-apigateway-serverless.arn
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-  runtime          = "nodejs10.x"
+  runtime          = "nodejs12.x"
   description      = "Get all messages in DynamoDB table (scan)"
 
   tags = {
@@ -331,7 +345,7 @@ resource "aws_lambda_function" "awsdemo-postMessage" {
   handler          = "app.postMessage"
   role             = aws_iam_role.iam-apigateway-serverless.arn
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-  runtime          = "nodejs10.x"
+  runtime          = "nodejs12.x"
   description      = "Create new message item in DynamoDB table"
 
   tags = {
@@ -345,8 +359,36 @@ resource "aws_lambda_function" "awsdemo-getMessage" {
   handler          = "app.getMessage"
   role             = aws_iam_role.iam-apigateway-serverless.arn
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
-  runtime          = "nodejs10.x"
+  runtime          = "nodejs12.x"
   description      = "Get single message based on timestamp and location"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
+resource "aws_lambda_function" "awsdemo-putMessage" {
+  filename         = "lambda_apigtw_to_dynamodb.zip"
+  function_name    = "awsdemo-putMessage"
+  handler          = "app.putMessage"
+  role             = aws_iam_role.iam-apigateway-serverless.arn
+  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+  runtime          = "nodejs12.x"
+  description      = "Update message item in DynamoDB table"
+
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
+
+resource "aws_lambda_function" "awsdemo-deleteMessage" {
+  filename         = "lambda_apigtw_to_dynamodb.zip"
+  function_name    = "awsdemo-deleteMessage"
+  handler          = "app.deleteMessage"
+  role             = aws_iam_role.iam-apigateway-serverless.arn
+  source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
+  runtime          = "nodejs12.x"
+  description      = "Delete message item in DynamoDB table"
 
   tags = {
     Environment = "AWS-Demo"
@@ -377,6 +419,22 @@ resource "aws_lambda_permission" "awsdemo-getMessage" {
   source_arn    = "${aws_api_gateway_rest_api.awsdemo-apigateway.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "awsdemo-putMessage" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.awsdemo-putMessage.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.awsdemo-apigateway.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "awsdemo-deleteMessage" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.awsdemo-deleteMessage.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.awsdemo-apigateway.execution_arn}/*/*"
+}
+
 resource "aws_api_gateway_integration" "awsdemo-getMessages" {
   rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway.id
   resource_id             = aws_api_gateway_method.awsdemo-getMessages.resource_id
@@ -395,7 +453,7 @@ resource "aws_api_gateway_integration" "awsdemo-postMessage" {
   uri                     = aws_lambda_function.awsdemo-postMessage.invoke_arn
 }
 
-resource "aws_api_gateway_integration" "awsdemo-integration-getMessage" {
+resource "aws_api_gateway_integration" "awsdemo-getMessage" {
   rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway.id
   resource_id             = aws_api_gateway_method.awsdemo-getMessage.resource_id
   http_method             = aws_api_gateway_method.awsdemo-getMessage.http_method
@@ -404,19 +462,37 @@ resource "aws_api_gateway_integration" "awsdemo-integration-getMessage" {
   uri                     = aws_lambda_function.awsdemo-getMessage.invoke_arn
 }
 
+resource "aws_api_gateway_integration" "awsdemo-putMessage" {
+  rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway.id
+  resource_id             = aws_api_gateway_method.awsdemo-putMessage.resource_id
+  http_method             = aws_api_gateway_method.awsdemo-putMessage.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.awsdemo-putMessage.invoke_arn
+}
 
+resource "aws_api_gateway_integration" "awsdemo-deleteMessage" {
+  rest_api_id             = aws_api_gateway_rest_api.awsdemo-apigateway.id
+  resource_id             = aws_api_gateway_method.awsdemo-deleteMessage.resource_id
+  http_method             = aws_api_gateway_method.awsdemo-deleteMessage.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.awsdemo-deleteMessage.invoke_arn
+}
 
+resource "aws_api_gateway_deployment" "awsdemo-deployment" {
+  rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway.id
+}
 
+resource "aws_api_gateway_stage" "awsdemo-stage" {
+  deployment_id = aws_api_gateway_deployment.awsdemo-deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway.id
+  stage_name    = "Prod"
 
-
-
-
-
-
-
-
-
-
+  tags = {
+    Environment = "AWS-Demo"
+  }
+}
 
 # resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
 #   name = "awsdemo-apigateway-apikey"
@@ -466,24 +542,3 @@ resource "aws_api_gateway_integration" "awsdemo-integration-getMessage" {
 #   key_type      = "API_KEY"
 #   usage_plan_id = aws_api_gateway_usage_plan.awsdemo-apigateway-usageplan.id
 # }
-
-# # resource "aws_api_gateway_method" "awsdemo-apigateway-post" {
-# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-# #   http_method   = "POST"
-# #   authorization = "NONE"
-# # }
-
-# # resource "aws_api_gateway_method" "awsdemo-apigateway-put" {
-# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-# #   http_method   = "PUT"
-# #   authorization = "NONE"
-# # }
-
-# # resource "aws_api_gateway_method" "awsdemo-apigateway-delete" {
-# #   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-# #   resource_id   = aws_api_gateway_resource.awsdemo-apigateway-resource.id
-# #   http_method   = "DELETE"
-# #   authorization = "NONE"
-# # }

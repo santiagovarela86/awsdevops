@@ -191,6 +191,7 @@ resource "aws_iam_role" "iam_sqs_to_dynamodb" {
 EOF
 
   managed_policy_arns = [
+    aws_iam_policy.logging.arn,
     aws_iam_policy.dynamodb.arn, 
     aws_iam_policy.receiveFromQueue.arn
   ]
@@ -344,7 +345,10 @@ resource "aws_iam_role" "iam-apigateway-serverless" {
 }
 EOF
 
-  managed_policy_arns = [aws_iam_policy.dynamodb.arn]
+  managed_policy_arns = [
+    aws_iam_policy.logging.arn,
+    aws_iam_policy.dynamodb.arn
+  ]
 
   tags = {
     Environment = "AWS-Demo"

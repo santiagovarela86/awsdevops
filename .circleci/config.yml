@@ -11,13 +11,13 @@ jobs:
       - checkout
       - run:
           name: Package S3 to SQS Lambda
-          command: zip -r lambda_s3_to_sqs.zip lambda_s3_to_sqs/*
+          command: (cd lambda_s3_to_sqs && zip -r ../lambda_s3_to_sqs.zip .)          
       - run:
           name: Package SQS to DynamoDB Lambda
-          command: zip -r lambda_sqs_to_dynamodb.zip lambda_sqs_to_dynamodb/*
+          command: (cd lambda_sqs_to_dynamodb && zip -r ../lambda_sqs_to_dynamodb.zip .)
       - run:
           name: Package Api Gateway to DynamoDB Lambda
-          command: zip -r lambda_apigtw_to_dynamodb.zip lambda_apigtw_to_dynamodb/*
+          command: (cd lambda_apigtw_to_dynamodb && zip -r ../lambda_apigtw_to_dynamodb.zip .)
       - persist_to_workspace:
           root: .
           paths:

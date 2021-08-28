@@ -137,6 +137,10 @@ resource "aws_sqs_queue" "awsdemo-sqs" {
   }
 }
 
+data "aws_sqs_queue" "awsdemo-sqs" {
+  name = "awsdemo-sqs"
+}
+
 resource "aws_dynamodb_table" "awsdemo-dynamodb-table" {
   name           = "awsdemo-dynamodb-table"
   billing_mode   = "PROVISIONED"
@@ -342,6 +346,13 @@ resource "aws_lambda_function" "awsdemo-getMessages" {
   runtime          = "nodejs12.x"
   description      = "Get all messages in DynamoDB table (scan)"
 
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
+
   tags = {
     Environment = "AWS-Demo"
   }
@@ -355,6 +366,13 @@ resource "aws_lambda_function" "awsdemo-postMessage" {
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
   runtime          = "nodejs12.x"
   description      = "Create new message item in DynamoDB table"
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
 
   tags = {
     Environment = "AWS-Demo"
@@ -370,6 +388,13 @@ resource "aws_lambda_function" "awsdemo-getMessage" {
   runtime          = "nodejs12.x"
   description      = "Get single message based on timestamp and location"
 
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
+
   tags = {
     Environment = "AWS-Demo"
   }
@@ -384,6 +409,13 @@ resource "aws_lambda_function" "awsdemo-putMessage" {
   runtime          = "nodejs12.x"
   description      = "Update message item in DynamoDB table"
 
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
+
   tags = {
     Environment = "AWS-Demo"
   }
@@ -397,6 +429,13 @@ resource "aws_lambda_function" "awsdemo-deleteMessage" {
   source_code_hash = filebase64sha256("lambda_apigtw_to_dynamodb.zip")
   runtime          = "nodejs12.x"
   description      = "Delete message item in DynamoDB table"
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.awsdemo-dynamodb-table.name
+      SQS_QUEUE_URL = data.aws_sqs_queue.awsdemo-sqs.url
+    }
+  }
 
   tags = {
     Environment = "AWS-Demo"

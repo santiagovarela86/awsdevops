@@ -26,7 +26,11 @@ resource "aws_iam_role" "iam_s3_to_sqs" {
 }
 EOF
 
-  managed_policy_arns = [aws_iam_policy.logging.arn, aws_iam_policy.getObjects.arn, aws_iam_policy.produceToQueue.arn]
+  managed_policy_arns = [
+    aws_iam_policy.logging.arn,
+    aws_iam_policy.getObjects.arn,
+    aws_iam_policy.produceToQueue.arn
+  ]
 
   tags = {
     Environment = "AWS-Demo"
@@ -122,6 +126,7 @@ resource "aws_sqs_queue" "awsdemo-sqs-deadletter" {
 
 resource "aws_sqs_queue" "awsdemo-sqs" {
   name = "awsdemo-sqs"
+  
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.awsdemo-sqs-deadletter.arn
     maxReceiveCount     = 5
@@ -174,7 +179,10 @@ resource "aws_iam_role" "iam_sqs_to_dynamodb" {
 }
 EOF
 
-  managed_policy_arns = [aws_iam_policy.dynamodb.arn, aws_iam_policy.receiveFromQueue.arn]
+  managed_policy_arns = [
+    aws_iam_policy.dynamodb.arn, 
+    aws_iam_policy.receiveFromQueue.arn
+  ]
 
   tags = {
     Environment = "AWS-Demo"
@@ -189,17 +197,17 @@ resource "aws_iam_policy" "dynamodb" {
     Statement = [
       {
         Action   = [
-              "dynamodb:GetItem",
-              "dynamodb:DeleteItem",
-              "dynamodb:PutItem",
-              "dynamodb:Scan",
-              "dynamodb:Query",
-              "dynamodb:UpdateItem",
-              "dynamodb:BatchWriteItem",
-              "dynamodb:BatchGetItem",
-              "dynamodb:DescribeTable",
-              "dynamodb:ConditionCheckItem"
-            ]
+          "dynamodb:GetItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:PutItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:BatchGetItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:ConditionCheckItem"
+        ]
         Effect   = "Allow"
         Resource = aws_dynamodb_table.awsdemo-dynamodb-table.arn
       },
@@ -482,6 +490,14 @@ resource "aws_api_gateway_integration" "awsdemo-deleteMessage" {
 
 resource "aws_api_gateway_deployment" "awsdemo-deployment" {
   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway.id
+
+  depends_on = [
+    aws_api_gateway_integration.awsdemo-getMessages, 
+    aws_api_gateway_integration.awsdemo-postMessage,
+    aws_api_gateway_integration.awsdemo-getMessage,
+    aws_api_gateway_integration.awsdemo-putMessage,
+    aws_api_gateway_integration.awsdemo-deleteMessage
+  ]
 }
 
 resource "aws_api_gateway_stage" "awsdemo-stage" {
@@ -496,22 +512,6 @@ resource "aws_api_gateway_stage" "awsdemo-stage" {
 
 # resource "aws_api_gateway_api_key" "awsdemo-apigateway-apikey" {
 #   name = "awsdemo-apigateway-apikey"
-# }
-
-# resource "aws_api_gateway_deployment" "awsdemo-apigateway-deployment" {
-#   rest_api_id = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-
-#   depends_on = [aws_api_gateway_integration.awsdemo-integration-getmessage, aws_api_gateway_integration.awsdemo-integration-getmessages]
-# }
-
-# resource "aws_api_gateway_stage" "awsdemo-apigateway-stage" {
-#   deployment_id = aws_api_gateway_deployment.awsdemo-apigateway-deployment.id
-#   rest_api_id   = aws_api_gateway_rest_api.awsdemo-apigateway-api.id
-#   stage_name    = "Prod"
-
-#   tags = {
-#     Environment = "AWS-Demo"
-#   }
 # }
 
 # resource "aws_api_gateway_usage_plan" "awsdemo-apigateway-usageplan" {
